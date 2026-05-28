@@ -205,7 +205,7 @@ public class TransferService {
      * Useful for verification that exactly 2 entries exist and they balance.
      */
     @Transactional(readOnly = true)
-    public java.util.List<LedgerEntry> getTransferLedgerEntries(UUID transferId) {
+    public java.util.List<LedgerEntry> getTransferLedgerEntries(String transferId) {
         return ledgerEntryRepository.findByTransferId(transferId);
     }
 }

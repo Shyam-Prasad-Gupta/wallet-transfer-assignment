@@ -47,22 +47,22 @@ class TransferServiceIntegrationTest {
     @Autowired
     private IdempotencyRecordRepository idempotencyRecordRepository;
 
-    private UUID sourceWalletId;
-    private UUID destinationWalletId;
+    private String sourceWalletId;
+    private String destinationWalletId;
     private Wallet sourceWallet;
     private Wallet destinationWallet;
 
     @BeforeEach
     void setUp() {
         // Create test wallets
-        sourceWalletId = UUID.randomUUID();
+        sourceWalletId = UUID.randomUUID().toString();
         sourceWallet = Wallet.builder()
             .id(sourceWalletId)
             .balance(10000L)
             .build();
         walletRepository.save(sourceWallet);
 
-        destinationWalletId = UUID.randomUUID();
+        destinationWalletId = UUID.randomUUID().toString();
         destinationWallet = Wallet.builder()
             .id(destinationWalletId)
             .balance(5000L)
@@ -157,7 +157,7 @@ class TransferServiceIntegrationTest {
 
         UUID differentDestination = UUID.randomUUID();
         Wallet wallet = Wallet.builder()
-            .id(differentDestination)
+            .id(differentDestination.toString())
             .balance(5000L)
             .build();
         walletRepository.save(wallet);
@@ -166,7 +166,7 @@ class TransferServiceIntegrationTest {
         assertThatThrownBy(() ->
             transferService.createTransfer(
                 sourceWalletId,
-                differentDestination,
+                differentDestination.toString(),
                 1000L,
                 "conflict-key"
             )
@@ -200,9 +200,9 @@ class TransferServiceIntegrationTest {
         UUID dest3 = UUID.randomUUID();
 
         walletRepository.saveAll(Arrays.asList(
-            Wallet.builder().id(dest1).balance(0L).build(),
-            Wallet.builder().id(dest2).balance(0L).build(),
-            Wallet.builder().id(dest3).balance(0L).build()
+            Wallet.builder().id(dest1.toString()).balance(0L).build(),
+            Wallet.builder().id(dest2.toString()).balance(0L).build(),
+            Wallet.builder().id(dest3.toString()).balance(0L).build()
         ));
 
         ExecutorService executor = Executors.newFixedThreadPool(3);
@@ -221,7 +221,7 @@ class TransferServiceIntegrationTest {
                     };
                     transferService.createTransfer(
                         sourceWalletId,
-                        destination,
+                        destination.toString(),
                         3000L,
                         "concurrent-" + index
                     );
@@ -269,13 +269,13 @@ class TransferServiceIntegrationTest {
         for (int i = 0; i < 5; i++) {
             UUID destinationWallet = UUID.randomUUID();
             walletRepository.save(Wallet.builder()
-                .id(destinationWallet)
+                .id(destinationWallet.toString())
                 .balance(0L)
                 .build());
 
             transferService.createTransfer(
                 sourceWalletId,
-                destinationWallet,
+                destinationWallet.toString(),
                 transferAmount,
                 "consistency-" + i
             );
@@ -312,7 +312,7 @@ class TransferServiceIntegrationTest {
         assertThatThrownBy(() ->
             transferService.createTransfer(
                 sourceWalletId,
-                nonExistentWallet,
+                nonExistentWallet.toString(),
                 1000L,
                 "non-existent-1"
             )
@@ -324,8 +324,8 @@ class TransferServiceIntegrationTest {
     @DisplayName("Should handle rapid sequential transfers atomically")
     void testSequentialTransfersAtomicity() {
         // Arrange
-        UUID dest1 = UUID.randomUUID();
-        UUID dest2 = UUID.randomUUID();
+        String dest1 = UUID.randomUUID().toString();
+        String dest2 = UUID.randomUUID().toString();
 
         walletRepository.saveAll(Arrays.asList(
             Wallet.builder().id(dest1).balance(0L).build(),

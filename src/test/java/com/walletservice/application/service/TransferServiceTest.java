@@ -43,8 +43,8 @@ class TransferServiceTest {
     @Mock
     private IdempotencyRecordRepository idempotencyRecordRepository;
 
-    private UUID sourceWalletId;
-    private UUID destinationWalletId;
+    private String sourceWalletId;
+    private String destinationWalletId;
     private Long transferAmount;
     private String idempotencyKey;
 
@@ -57,8 +57,8 @@ class TransferServiceTest {
             idempotencyRecordRepository
         );
 
-        sourceWalletId = UUID.randomUUID();
-        destinationWalletId = UUID.randomUUID();
+        sourceWalletId = UUID.randomUUID().toString();
+        destinationWalletId = UUID.randomUUID().toString();
         transferAmount = 100L;
         idempotencyKey = "test-key-123";
     }
@@ -80,7 +80,7 @@ class TransferServiceTest {
             .build();
 
         Transfer savedTransfer = Transfer.builder()
-            .id(UUID.randomUUID())
+            .id(UUID.randomUUID().toString())
             .fromWalletId(sourceWalletId)
             .toWalletId(destinationWalletId)
             .amount(transferAmount)
@@ -120,7 +120,7 @@ class TransferServiceTest {
     @DisplayName("Should return original transfer on duplicate idempotent request")
     void testTransferCreation_Idempotency_DuplicateRequest() {
         // Arrange
-        UUID transferId = UUID.randomUUID();
+        String transferId = UUID.randomUUID().toString();
         Transfer originalTransfer = Transfer.builder()
             .id(transferId)
             .fromWalletId(sourceWalletId)
@@ -162,12 +162,12 @@ class TransferServiceTest {
     @DisplayName("Should reject idempotency key reuse with different parameters")
     void testTransferCreation_Idempotency_ConflictingRequest() {
         // Arrange
-        UUID differentDestinationWalletId = UUID.randomUUID();
+        String differentDestinationWalletId = UUID.randomUUID().toString();
         String differentRequestHash = "different-hash";
 
         IdempotencyRecord existingRecord = IdempotencyRecord.builder()
             .idempotencyKey(idempotencyKey)
-            .transferId(UUID.randomUUID())
+            .transferId(UUID.randomUUID().toString())
             .requestHash(differentRequestHash)
             .build();
 
@@ -346,18 +346,18 @@ class TransferServiceTest {
         // Arrange
         UUID transferId = UUID.randomUUID();
         Transfer transfer = Transfer.builder()
-            .id(transferId)
+            .id(transferId.toString())
             .fromWalletId(sourceWalletId)
             .toWalletId(destinationWalletId)
             .amount(transferAmount)
             .status(Transfer.TransferStatus.PROCESSED)
             .build();
 
-        when(transferRepository.findById(transferId))
+        when(transferRepository.findById(transferId.toString()))
             .thenReturn(Optional.of(transfer));
 
         // Act
-        Transfer result = transferService.getTransfer(transferId);
+        Transfer result = transferService.getTransfer(transferId.toString());
 
         // Assert
         assertThat(result).isNotNull();
@@ -369,11 +369,11 @@ class TransferServiceTest {
     void testGetTransfer_NotFound() {
         // Arrange
         UUID transferId = UUID.randomUUID();
-        when(transferRepository.findById(transferId))
+        when(transferRepository.findById(transferId.toString()))
             .thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThatThrownBy(() -> transferService.getTransfer(transferId))
+        assertThatThrownBy(() -> transferService.getTransfer(transferId.toString()))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("Transfer not found");
     }
