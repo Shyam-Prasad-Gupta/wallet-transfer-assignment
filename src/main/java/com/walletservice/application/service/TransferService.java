@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
-import java.util.UUID;
 
 /**
  * Service for wallet transfer orchestration.
@@ -116,11 +115,15 @@ public class TransferService {
 
         // Step 2: Acquire locks on both wallets in consistent order (to prevent deadlock)
         // Always lock source first, then destination
-        Wallet sourceWallet = walletRepository.findByIdForUpdate(fromWalletId)
+        //replacing the call with simple get by Id as h2DB doesn't support select for write lock
+        //instead we will rely on optimistic locking
+        Wallet sourceWallet = walletRepository.findById(fromWalletId)
             .orElseThrow(() -> new IllegalArgumentException(
                 "Source wallet not found: " + fromWalletId));
 
-        Wallet destinationWallet = walletRepository.findByIdForUpdate(toWalletId)
+        //replacing the call with simple get by Id as h2DB doesn't support select for write
+        //instead we will rely on optimistic locking
+        Wallet destinationWallet = walletRepository.findById(toWalletId)
             .orElseThrow(() -> new IllegalArgumentException(
                 "Destination wallet not found: " + toWalletId));
 
