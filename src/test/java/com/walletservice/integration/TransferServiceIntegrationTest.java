@@ -55,23 +55,25 @@ class TransferServiceIntegrationTest {
     @BeforeEach
     void setUp() {
         // Create test wallets
-        sourceWalletId = UUID.randomUUID().toString();
         sourceWallet = Wallet.builder()
-            .id(sourceWalletId)
             .balance(10000L)
             .build();
         walletRepository.save(sourceWallet);
+        sourceWalletId = sourceWallet.getId();
 
-        destinationWalletId = UUID.randomUUID().toString();
         destinationWallet = Wallet.builder()
-            .id(destinationWalletId)
             .balance(5000L)
             .build();
         walletRepository.save(destinationWallet);
 
+        destinationWalletId = destinationWallet.getId();
+
         // Refresh to ensure we have the latest state
-        sourceWallet = walletRepository.findById(sourceWalletId).orElseThrow();
-        destinationWallet = walletRepository.findById(destinationWalletId).orElseThrow();
+        sourceWallet = walletRepository.findById(sourceWallet.getId()).orElseThrow();
+        destinationWallet = walletRepository.findById(destinationWallet.getId()).orElseThrow();
+
+        ledgerEntryRepository.deleteAll();
+        transferRepository.deleteAll();
     }
 
     @Test
@@ -267,15 +269,15 @@ class TransferServiceIntegrationTest {
 
         // Act
         for (int i = 0; i < 5; i++) {
-            UUID destinationWallet = UUID.randomUUID();
-            walletRepository.save(Wallet.builder()
-                .id(destinationWallet.toString())
+            //UUID destinationWallet = UUID.randomUUID();
+            Wallet destinationWallet = walletRepository.save(Wallet.builder()
+                //.id(destinationWallet.toString())
                 .balance(0L)
                 .build());
 
             transferService.createTransfer(
                 sourceWalletId,
-                destinationWallet.toString(),
+                destinationWallet.getId(),
                 transferAmount,
                 "consistency-" + i
             );
@@ -323,15 +325,16 @@ class TransferServiceIntegrationTest {
     @Test
     @DisplayName("Should handle rapid sequential transfers atomically")
     void testSequentialTransfersAtomicity() {
-        // Arrange
-        String dest1 = UUID.randomUUID().toString();
-        String dest2 = UUID.randomUUID().toString();
 
-        walletRepository.saveAll(Arrays.asList(
-            Wallet.builder().id(dest1).balance(0L).build(),
-            Wallet.builder().id(dest2).balance(0L).build()
-        ));
+        //create wallets
+        List<Wallet> walletList = Arrays.asList(
+                Wallet.builder().balance(0L).build(),
+                Wallet.builder().balance(0L).build()
+        );
+        walletRepository.saveAll(walletList);
 
+        String dest1 = walletList.get(0).getId();
+        String dest2 = walletList.get(1).getId();
         // Act
         Transfer transfer1 = transferService.createTransfer(
             sourceWalletId,
