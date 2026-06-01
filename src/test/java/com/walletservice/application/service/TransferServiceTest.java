@@ -3,6 +3,7 @@ package com.walletservice.application.service;
 import static org.assertj.core.api.Assertions.*;
 
 import com.walletservice.application.exception.IdempotencyConflictException;
+import com.walletservice.application.util.HashUtil;
 import com.walletservice.domain.entity.*;
 import com.walletservice.infrastructure.repository.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -84,7 +85,7 @@ class TransferServiceTest {
             .fromWalletId(sourceWalletId)
             .toWalletId(destinationWalletId)
             .amount(transferAmount)
-            .status(Transfer.TransferStatus.PROCESSED)
+            .status(Transfer.TransferStatus.PENDING)
             .build();
 
         when(idempotencyRecordRepository.findById(idempotencyKey))
@@ -132,7 +133,7 @@ class TransferServiceTest {
         IdempotencyRecord idempotencyRecord = IdempotencyRecord.builder()
             .idempotencyKey(idempotencyKey)
             .transferId(transferId)
-            .requestHash("hash1")
+            .requestHash(HashUtil.hashTransferRequest(sourceWalletId, destinationWalletId, transferAmount))
             .build();
 
         when(idempotencyRecordRepository.findById(idempotencyKey))
@@ -361,7 +362,7 @@ class TransferServiceTest {
 
         // Assert
         assertThat(result).isNotNull();
-        assertThat(result.getId()).isEqualTo(transferId);
+        assertThat(result.getId()).isEqualTo(transferId.toString());
     }
 
     @Test
