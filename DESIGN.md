@@ -633,6 +633,31 @@ Response: 200 OK
 
 ---
 
+### 6. Sample API
+**Get Transfer Details**:
+```
+curl --location --request GET 'http://localhost:8080/api/v1/transfers/19f2fe84-d3d8-4fe7-b4e6-02d423d89510' \
+--header 'Content-Type: application/json' \
+--data '{
+"idempotencyKey": "bb37c6fd-7d72-445f-83ae-36aaaafa5c48",
+"fromWalletId": "7dd4deb6-3343-41ac-b405-e4040672efb6",
+"toWalletId": "e8773e60-e8d6-4565-af64-e4adffdf5a51",
+"amount": 5
+}'
+```
+
+**Perform Transfer**:
+```
+curl --location 'http://localhost:8080/api/v1/transfers' \
+--header 'Content-Type: application/json' \
+--data '{
+    "idempotencyKey": "bb37c6fd-7d72-445f-83ae-36aaaafa5c48",
+    "fromWalletId": "7dd4deb6-3343-41ac-b405-e4040672efb6",
+    "toWalletId": "e8773e60-e8d6-4565-af64-e4adffdf5a51",
+    "amount": 5
+}'
+```
+
 ## Assumptions
 
 1. **Balance precision**: Using BIGINT for amounts (assuming integer cents, not decimals)
