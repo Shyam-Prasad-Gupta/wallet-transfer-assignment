@@ -238,8 +238,8 @@ class TransferServiceIntegrationTest {
 
         // Wait for all transfers to complete
         boolean completed = latch.await(10, TimeUnit.SECONDS);
+        //executor.awaitTermination(10, TimeUnit.SECONDS);
         executor.shutdown();
-
         // Assert
         assertThat(completed).isTrue();
 
